@@ -1,9 +1,7 @@
 #include "heartbeat.hpp"
 
 int main() {
-    while (1) {
-        send_heartbeat();
-    }    
+  send_heartbeat();
 
-    return 0;
+  return 0;
 }
