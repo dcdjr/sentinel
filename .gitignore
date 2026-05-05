@@ -2,7 +2,11 @@
 TODO.md
 
 # bin
-sentinel
+sentinel-agent
+sentinel-collector
 
 # compile flags
 compile_flags.txt
+
+# build
+build/
