@@ -2,7 +2,7 @@
 #include <ctime>
 #include <string>
 
-#include "event.hpp"
+#include "sentinel/common/event.hpp"
 
 using json = nlohmann::json;
 

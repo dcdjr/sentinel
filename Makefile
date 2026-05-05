@@ -1,17 +1,39 @@
 CXX = g++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++17 -Iinclude
 
-TARGET = sentinel
-SRC = $(wildcard src/*.cpp)
-OBJ = $(patsubst src/%.cpp,src/%.o,$(SRC))
+BUILD_DIR = build
 
-$(TARGET): $(OBJ)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJ)
+AGENT_TARGET = sentinel-agent
+COLLECTOR_TARGET = sentinel-collector
 
-src/%.o: src/%.cpp
+AGENT_SRC = \
+	src/agent/agent_main.cpp \
+	src/agent/heartbeat.cpp \
+	src/agent/sink.cpp \
+	src/common/event.cpp
+
+COLLECTOR_SRC = \
+	src/collector/collector_main.cpp \
+	src/collector/collector.cpp
+
+AGENT_OBJ = $(patsubst src/%.cpp,$(BUILD_DIR)/%.o,$(AGENT_SRC))
+COLLECTOR_OBJ = $(patsubst src/%.cpp,$(BUILD_DIR)/%.o,$(COLLECTOR_SRC))
+
+TARGETS = $(AGENT_TARGET) $(COLLECTOR_TARGET)
+
+all: $(TARGETS)
+
+$(AGENT_TARGET): $(AGENT_OBJ)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+$(COLLECTOR_TARGET): $(COLLECTOR_OBJ)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+$(BUILD_DIR)/%.o: src/%.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJ) $(TARGET)
+	rm -rf $(BUILD_DIR) $(TARGETS)
 
-.PHONY: clean
+.PHONY: all clean

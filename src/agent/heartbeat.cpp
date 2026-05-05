@@ -2,9 +2,9 @@
 #include <nlohmann/json.hpp>
 #include <thread>
 
-#include "heartbeat.hpp"
-#include "event.hpp"
-#include "sink.hpp"
+#include "sentinel/agent/heartbeat.hpp"
+#include "sentinel/agent/sink.hpp"
+#include "sentinel/common/event.hpp"
 
 using json = nlohmann::json;
 
@@ -15,7 +15,7 @@ void send_heartbeat() {
 
         json heartbeat_event = make_heartbeat_event();
 
-        sink_stdout(heartbeat_event);
+        sink_tcp(heartbeat_event);
 
         std::this_thread::sleep_for(std::chrono::seconds(N));
     }
