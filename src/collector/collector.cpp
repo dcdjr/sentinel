@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <cstring>
 #include <iostream>
+#include <string>
 
 #include "sentinel/collector/collector.hpp"
 
@@ -52,9 +53,7 @@ static bool recv_all(int agent_fd, void* buffer, size_t length) {
     while (length > 0) {
         ssize_t received = recv(agent_fd, ptr, length, 0);
 
-        if (received < 0) {
-            return false;
-        } else if (received == 0) {
+        if (received <= 0) {
             return false;
         }
 
@@ -72,39 +71,41 @@ void collect() {
         return;
     }
 
-    struct sockaddr_in agent_addr;
-    socklen_t agent_len = sizeof(agent_addr);
-
     while (true) {
+        struct sockaddr_in agent_addr;
+        socklen_t agent_len = sizeof(agent_addr);
+
         int agent_fd = accept(collector_fd, (struct sockaddr *)&agent_addr, &agent_len);
-        if (agent_fd < 0) return;
+        if (agent_fd < 0) {
+            std::cerr << "Collector failed to accept connection." << std::endl;
+            continue;
+        }
         
         // Receive 4 bytes for size
         uint32_t size = 0;
         bool received_size = recv_all(agent_fd, &size, PAYLOAD_SIZE_BYTES);
-        size = ntohl(size);
-    
-        if (size > MAX_EVENT_BYTES) {
-            std::cerr << "Size of event exceed 1KB." << std::endl;
+        if (!received_size) {
+            std::cerr << "Failed to receive size of payload." << std::endl;
+            close(agent_fd);
             continue;
         }
 
-        if (!received_size) {
-            std::cerr << "Failed to receive size of payload." << std::endl;
+        size = ntohl(size);
+    
+        if (size > MAX_EVENT_BYTES) {
+            std::cerr << "Size of event exceeds 1KB." << std::endl;
+            close(agent_fd);
             continue;
         }
 
         // Receive rest of message
-        char* buffer = new char[size + 1];
-        bool received_data = recv_all(agent_fd, buffer, size);
-        buffer[size] = '\0';
+        std::string message(size, '\0');
+        bool received_data = recv_all(agent_fd, message.data(), size);
         if (!received_data) {
             std::cerr << "Failed to receive payload." << std::endl;
+            close(agent_fd);
             continue;
         }
-
-        std::string message(buffer);
-        delete[] buffer;
         
         std::cout << message << std::endl;
 
