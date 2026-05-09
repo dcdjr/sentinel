@@ -71,11 +71,17 @@ static bool recv_all(int agent_fd, void* buffer, size_t length) {
 static bool check_json_fields(const json& j) {
     return (
         j.contains("event_type") &&
+        j["event_type"].is_string() &&
         j.contains("timestamp") &&
+        j["timestamp"].is_string() &&
         j.contains("agent_id") &&
+        j["agent_id"].is_number_integer() &&
         j.contains("hostname") &&
+        j["hostname"].is_string() &&
         j.contains("sequence") &&
-        j.contains("payload")
+        j["sequence"].is_number_integer() &&
+        j.contains("payload") &&
+        j["payload"].is_object()
     );
 }
 
@@ -135,8 +141,20 @@ void collect() {
                 close(agent_fd);
                 continue;
             }
-            
-            std::cout << message << std::endl;
+
+            // Log events
+
+            std::string event_type = j["event_type"];
+            int agent_id = j["agent_id"];
+            std::string hostname = j["hostname"];
+            int sequence = j["sequence"];
+
+            std::cout 
+                << "Accepted Event: type=" << event_type 
+                << " agent_id=" << agent_id 
+                << " hostname=" << hostname
+                << " sequence=" << sequence
+                << std::endl;
 
             close(agent_fd);
         } catch (const json::parse_error& e) {
