@@ -4,9 +4,15 @@
 #include <unistd.h>
 #include <cstring>
 #include <iostream>
+<<<<<<< HEAD
 #include <string>
+=======
+#include <nlohmann/json.hpp>
+>>>>>>> 67364c9 (Harden collector TCP receive path)
 
 #include "sentinel/collector/collector.hpp"
+
+using json = nlohmann::json;
 
 constexpr int LISTENING_PORT = 5150;
 constexpr int PAYLOAD_SIZE_BYTES = 4;
@@ -64,6 +70,17 @@ static bool recv_all(int agent_fd, void* buffer, size_t length) {
     return true;
 }
 
+static bool check_json_fields(const json& j) {
+    return (
+        j.contains("event_type") &&
+        j.contains("timestamp") &&
+        j.contains("agent_id") &&
+        j.contains("hostname") &&
+        j.contains("sequence") &&
+        j.contains("payload")
+    );
+}
+
 void collect() {
     int collector_fd = set_up_collector_socket();
     if (collector_fd < 0) {
@@ -71,8 +88,14 @@ void collect() {
         return;
     }
 
+<<<<<<< HEAD
     while (true) {
         struct sockaddr_in agent_addr;
+=======
+    struct sockaddr_in agent_addr;
+
+    while (true) {
+>>>>>>> 67364c9 (Harden collector TCP receive path)
         socklen_t agent_len = sizeof(agent_addr);
 
         int agent_fd = accept(collector_fd, (struct sockaddr *)&agent_addr, &agent_len);
@@ -84,6 +107,7 @@ void collect() {
         // Receive 4 bytes for size
         uint32_t size = 0;
         bool received_size = recv_all(agent_fd, &size, PAYLOAD_SIZE_BYTES);
+<<<<<<< HEAD
         if (!received_size) {
             std::cerr << "Failed to receive size of payload." << std::endl;
             close(agent_fd);
@@ -95,6 +119,24 @@ void collect() {
         if (size > MAX_EVENT_BYTES) {
             std::cerr << "Size of event exceeds 1KB." << std::endl;
             close(agent_fd);
+=======
+
+        if (!received_size) {
+            std::cerr << "Failed to receive size of payload." << std::endl;
+            close(agent_fd);
+            continue;
+        }
+
+        size = ntohl(size);
+
+        if (size > MAX_EVENT_BYTES) {
+            std::cerr << "Size of event exceeds 1KB." << std::endl;
+            close(agent_fd);
+            continue;
+        } else if (size == 0) {
+            std::cerr << "Size of event is invalid." << std::endl;
+            close(agent_fd);
+>>>>>>> 67364c9 (Harden collector TCP receive path)
             continue;
         }
 
@@ -106,9 +148,30 @@ void collect() {
             close(agent_fd);
             continue;
         }
+<<<<<<< HEAD
         
         std::cout << message << std::endl;
+=======
 
-        close(agent_fd);
+        // Validate that JSON message parses
+        try {
+            auto j = json::parse(message);
+>>>>>>> 67364c9 (Harden collector TCP receive path)
+
+            // If it parses, check that it contains correct fields
+            if (!check_json_fields(j)) {
+                std::cerr << "Invalid JSON received." << std::endl;
+                close(agent_fd);
+                continue;
+            }
+            
+            std::cout << message << std::endl;
+
+            close(agent_fd);
+        } catch (const json::parse_error& e) {
+            std::cerr << "Invalid JSON received." << std::endl;
+            close(agent_fd);
+            continue;
+        }
     }
 }

@@ -1,10 +1,23 @@
 #include <chrono>
+#include <iostream>
 #include <ctime>
 #include <string>
+#include <unistd.h>
+#include <limits.h>
 
 #include "sentinel/common/event.hpp"
 
 using json = nlohmann::json;
+
+static std::string get_hostname() {
+    char hostname[HOST_NAME_MAX + 1];
+
+    if (gethostname(hostname, sizeof(hostname)) == 0) {
+        return std::string(hostname);
+    }
+
+    return "unknown";
+}
 
 static json make_common_envelope(std::string event_type, json event_payload) {
     json common_envelope;
@@ -20,7 +33,7 @@ static json make_common_envelope(std::string event_type, json event_payload) {
     common_envelope["event_type"] = event_type;
     common_envelope["timestamp"] = now_s;
     common_envelope["agent_id"] = 1;
-    common_envelope["hostname"] = "...";
+    common_envelope["hostname"] = get_hostname();
     common_envelope["sequence"] = 2;
     common_envelope["payload"] = event_payload;
 
