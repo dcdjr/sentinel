@@ -11,9 +11,11 @@ using json = nlohmann::json;
 constexpr int N = 5;
 
 void send_heartbeat() {
+    int sequence = 1;
+
     while (true) {
 
-        json heartbeat_event = make_heartbeat_event();
+        json heartbeat_event = make_heartbeat_event(sequence++);
 
         sink_tcp(heartbeat_event);
 

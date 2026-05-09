@@ -19,7 +19,7 @@ static std::string get_hostname() {
     return "unknown";
 }
 
-static json make_common_envelope(std::string event_type, json event_payload) {
+static json make_common_envelope(std::string event_type, json event_payload, int sequence) {
     json common_envelope;
 
     // Get current time
@@ -34,13 +34,13 @@ static json make_common_envelope(std::string event_type, json event_payload) {
     common_envelope["timestamp"] = now_s;
     common_envelope["agent_id"] = 1;
     common_envelope["hostname"] = get_hostname();
-    common_envelope["sequence"] = 2;
+    common_envelope["sequence"] = sequence;
     common_envelope["payload"] = event_payload;
 
     return common_envelope;
 }
 
-json make_heartbeat_event() {
+json make_heartbeat_event(int sequence) {
     // Build heartbeat-specific payload
     json heartbeat_payload;
     
@@ -50,7 +50,7 @@ json make_heartbeat_event() {
     heartbeat_payload["uptime_seconds"] = 69.1f;
 
     // Build common event format
-    json heartbeat_event = make_common_envelope("heartbeat", heartbeat_payload);
+    json heartbeat_event = make_common_envelope("heartbeat", heartbeat_payload, sequence);
 
     return heartbeat_event;
 }

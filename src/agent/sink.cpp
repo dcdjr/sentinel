@@ -8,8 +8,8 @@
 
 using json = nlohmann::json;
 
-const char* AGENT_IP = "127.0.0.1";
-constexpr int AGENT_PORT = 5150;
+const char* COLLECTOR_IP = "127.0.0.1";
+constexpr int COLLECTOR_PORT = 5150;
 
 static int connect_to_collector() {
     int collector_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -19,8 +19,8 @@ static int connect_to_collector() {
 
     struct sockaddr_in collector_addr;
     collector_addr.sin_family = AF_INET;
-    collector_addr.sin_port = htons(AGENT_PORT);
-    inet_pton(AF_INET, AGENT_IP, &collector_addr.sin_addr);
+    collector_addr.sin_port = htons(COLLECTOR_PORT);
+    inet_pton(AF_INET, COLLECTOR_IP, &collector_addr.sin_addr);
 
     if (connect(collector_fd, (struct sockaddr *)&collector_addr, sizeof(collector_addr)) < 0) {
         // Connection failed
