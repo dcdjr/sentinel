@@ -14,32 +14,7 @@ Early development. The current prototype supports:
 - A `sentinel-agent` executable
 - A `sentinel-collector` executable
 - Length-prefixed TCP event delivery from agent to collector
-- Basic collector-side event output
-
-## Planned Architecture
-
-```text
-agent/
-  collects host status and security events
-
-common event builder/
-  creates structured event objects
-
-serializer/
-  converts events to JSON
-
-collector/
-  receives events over TCP
-
-storage/
-  stores events locally for later analysis
-
-detector/
-  checks events against simple rules
-
-alerter/
-  reports important findings
-```
+- Basic collector-side event output + storage
 
 ## Goals
 
@@ -80,4 +55,6 @@ The agent sends periodic JSON heartbeat events to the collector.
 
 ## Development Notes
 
-Sentinel is intentionally being built in small stages. The current milestone is not full intrusion detection yet. The focus is getting the event format, transport layer, and process separation correct before adding real host telemetry, storage, and detection rules.
+Sentinel is intentionally being built in small stages. The current milestone is not full intrusion detection yet. 
+The focus is getting the event format, transport layer, and process separation correct before adding real host telemetry, storage, and detection rules.
+Accepted events are appended to data/events.jsonl when the collector is run from the project root.

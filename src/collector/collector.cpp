@@ -7,6 +7,7 @@
 #include <nlohmann/json.hpp>
 
 #include "sentinel/collector/collector.hpp"
+#include "sentinel/collector/storage.hpp"
 
 using json = nlohmann::json;
 
@@ -133,10 +134,10 @@ void collect() {
 
         // Validate that JSON message parses
         try {
-            auto j = json::parse(message);
+            auto event_json = json::parse(message);
 
             // If it parses, check that it contains correct fields
-            if (!check_json_fields(j)) {
+            if (!check_json_fields(event_json)) {
                 std::cerr << "Invalid JSON received." << std::endl;
                 close(agent_fd);
                 continue;
@@ -144,10 +145,17 @@ void collect() {
 
             // Log events
 
-            std::string event_type = j["event_type"];
-            int agent_id = j["agent_id"];
-            std::string hostname = j["hostname"];
-            int sequence = j["sequence"];
+            std::string event_type = event_json["event_type"];
+            int agent_id = event_json["agent_id"];
+            std::string hostname = event_json["hostname"];
+            int sequence = event_json["sequence"];
+            
+            bool store_result = store_event(event_json);
+            if (!store_result) {
+                std::cerr << "Failed to store result." << std::endl;
+                close(agent_fd);
+                continue;
+            }
 
             std::cout 
                 << "Accepted Event: type=" << event_type 

@@ -10,3 +10,7 @@ compile_flags.txt
 
 # build
 build/
+
+# log data
+data/*.jsonl
+data/*.log

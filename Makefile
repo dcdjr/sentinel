@@ -14,7 +14,8 @@ AGENT_SRC = \
 
 COLLECTOR_SRC = \
 	src/collector/collector_main.cpp \
-	src/collector/collector.cpp
+	src/collector/collector.cpp \
+    src/collector/storage.cpp
 
 AGENT_OBJ = $(patsubst src/%.cpp,$(BUILD_DIR)/%.o,$(AGENT_SRC))
 COLLECTOR_OBJ = $(patsubst src/%.cpp,$(BUILD_DIR)/%.o,$(COLLECTOR_SRC))
